@@ -19,9 +19,13 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Build IPA with Swift Package Manager
+    - name: Generate Xcode Project
       run: |
-        swift package --swift-sdk iphoneos-arm64 generate-xcodeproj
+        swift package generate-xcodeproj
+        ls -la *.xcodeproj/
+    
+    - name: Build Archive
+      run: |
         xcodebuild archive           -project BionicDroneVisionServer.xcodeproj           -scheme BionicDroneVisionServer           -configuration Release           -destination 'generic/platform=iOS'           CODE_SIGNING_REQUIRED=NO           CODE_SIGN_IDENTITY=""           -archivePath build/BionicDroneVisionServer.xcarchive           2>&1 | tail -50
         ls -la build/
     
