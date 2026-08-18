@@ -19,9 +19,9 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Create Xcode Project
+    - name: Generate Xcode Project
       run: |
-        xcodebuild -create-xcode-project           -projectName BionicDroneVisionServer           -folderPath .           -scheme BionicDroneVisionServer           -target BionicDroneVisionServer           -targetDeviceFamily iphone,iPad           -deploymentTarget 17.0           -interface SwiftUI           -language Swift           -output BionicDroneVisionServer.xcodeproj
+        swift package generate-xcodeproj
         ls -la *.xcodeproj/
     
     - name: Build Archive
