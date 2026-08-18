@@ -19,22 +19,57 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Build Archive
+    - name: Build IPA
       run: |
-        xcodebuild archive \
-          -project BionicDroneVisionServer.xcodeproj \
-          -scheme BionicDroneVisionServer \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
-          2>&1 | tail -100
-        ls -la build/
-    
-    - name: Export IPA
-      run: |
-        cat > export.plist << 'PLIST'
+        # Create minimal Info.plist
+        cat > Info.plist << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleDevelopmentRegion</key>
+            <string>en</string>
+            <key>CFBundleExecutable</key>
+            <string>$(EXECUTABLE_NAME)</string>
+            <key>CFBundleIdentifier</key>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            <key>CFBundleInfoDictionaryVersion</key>
+            <string>6.0</string>
+            <key>CFBundleName</key>
+            <string>$(PRODUCT_NAME)</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>CFBundleVersion</key>
+            <string>1</string>
+            <key>LSRequiresIPhoneOS</key>
+            <true/>
+            <key>UIApplicationSceneManifest</key>
+            <dict>
+                <key>UIApplicationSupportsMultipleScenes</key>
+                <false/>
+            </dict>
+            <key>UIApplicationSupportsIndirectInputEvents</key>
+            <true/>
+            <key>UILaunchScreen</key>
+            <dict/>
+            <key>UIRequiredDeviceCapabilities</key>
+            <array>
+                <string>arm64</string>
+            </array>
+            <key>UISupportedInterfaceOrientations</key>
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+            </array>
+        </dict>
+        </plist>
+        EOF
+        
+        # Create export options
+        cat > export.plist << 'EOF'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
@@ -45,12 +80,27 @@ jobs:
             <false/>
         </dict>
         </plist>
-        PLIST
+        EOF
         
+        # Build the app
+        swift package generate-xcodeproj
+        xcodebuild archive \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          INFOPLIST_FILE=Info.plist \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          2>&1 | tail -100
+        
+        # Export IPA
         xcodebuild -exportArchive \
           -archivePath build/BionicDroneVisionServer.xcarchive \
           -exportPath build/Products \
           -exportOptionsPlist export.plist
+        
         ls -la build/Products/
     
     - name: Upload IPA
