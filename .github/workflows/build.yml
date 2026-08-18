@@ -1,174 +1,128 @@
 name: Build iOS IPA
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build:
-    name: Build IPA
-    runs-on: macos-latest
+    name: Build iOS App
+    runs-on: macos-14
     
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: Create iOS app
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.4'
+    
+    - name: Show environment
       run: |
-        mkdir -p App
-        cat > App/main.swift << 'SWIFT'
-        import SwiftUI
-        @main
-        struct App: App {
-            var body: some Scene {
-                WindowGroup {
-                    Text("Hello iOS")
-                }
-            }
+        xcodebuild -version
+        xcrun --sdk iphoneos --show-sdk-path
+    
+    - name: Create Xcode Project
+      run: |
+        # Create project structure
+        mkdir -p BionicDroneVisionServer
+        cp -r App/* BionicDroneVisionServer/
+        
+        # Create Assets catalog
+        mkdir -p BionicDroneVisionServer/Resources/Assets.xcassets/AppIcon.appiconset
+        cat > BionicDroneVisionServer/Resources/Assets.xcassets/Contents.json << 'JSON'
+        {
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
         }
-        SWIFT
-        cat > App/Info.plist << 'PLIST'
+        JSON
+        cat > BionicDroneVisionServer/Resources/Assets.xcassets/AppIcon.appiconset/Contents.json << 'JSON'
+        {
+          "images" : [
+            {
+              "idiom" : "universal",
+              "platform" : "ios",
+              "size" : "1024x1024"
+            }
+          ],
+          "info" : {
+            "author" : "xcode",
+            "version" : 1
+          }
+        }
+        JSON
+        
+        echo "Project structure created"
+        ls -laR BionicDroneVisionServer/
+    
+    - name: Generate Xcode Project
+      run: |
+        cd BionicDroneVisionServer
+        xcodebuild -create-xcode-project \
+          -projectName BionicDroneVisionServer \
+          -folderPath . \
+          -scheme BionicDroneVisionServer \
+          -target BionicDroneVisionServer \
+          -targetDeviceFamily iphone,iPad \
+          -deploymentTarget 16.0 \
+          -interface SwiftUI \
+          -language Swift
+        ls -la *.xcodeproj/
+    
+    - name: Build Archive
+      run: |
+        mkdir -p build
+        xcodebuild archive \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          CODE_SIGNING_ALLOWED=NO \
+          2>&1 | tee build.log
+        
+        echo "=== Build Result ==="
+        if [ -f build/BionicDroneVisionServer.xcarchive ]; then
+            echo "SUCCESS: Archive created"
+            ls -la build/BionicDroneVisionServer.xcarchive/
+            ls -la build/BionicDroneVisionServer.xcarchive/Products/Applications/
+        else
+            echo "FAILED: Archive not found"
+            tail -50 build.log
+            exit 1
+        fi
+    
+    - name: Export IPA
+      run: |
+        cat > export.plist << 'PLIST'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
-            <key>CFBundleDevelopmentRegion</key>
-            <string>en</string>
-            <key>CFBundleExecutable</key>
-            <string>$(EXECUTABLE_NAME)</string>
-            <key>CFBundleIdentifier</key>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            <key>CFBundleInfoDictionaryVersion</key>
-            <string>6.0</string>
-            <key>CFBundleName</key>
-            <string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-            <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
-            <key>CFBundleVersion</key>
-            <string>1</string>
-            <key>LSRequiresIPhoneOS</key>
-            <true/>
-            <key>UIApplicationSceneManifest</key>
-            <dict>
-                <key>UIApplicationSupportsMultipleScenes</key>
-                <false/>
-            </dict>
-            <key>UIApplicationSupportsIndirectInputEvents</key>
-            <true/>
-            <key>UILaunchScreen</key>
-            <dict/>
-            <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>arm64</string>
-            </array>
-            <key>UISupportedInterfaceOrientations</key>
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-            </array>
+            <key>method</key>
+            <string>development</string>
+            <key>uploadSymbols</key>
+            <false/>
         </dict>
         </plist>
         PLIST
-        ls -la App/
-    
-    - name: Create Xcode project
-      run: |
-        mkdir -p App.xcodeproj
-        cat > App.xcodeproj/project.pbxproj << 'PBXPROJ'
-        // !$*UTF8*$!
-        {
-        	archiveVersion = 1;
-        	classes = {
-        	};
-        	objectVersion = 50;
-        	objects = {
-        		1A000001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A000001; };
-        		2A000001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-        		3A000001 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
-        		4A000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-        		5A000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
-        		6A000001 = {isa = PBXGroup; children = ( 7A000001, 8A000001, 9A000001 ); sourceTree = "<group>"; };
-        		7A000001 /* App */ = {isa = PBXGroup; children = ( 2A000001, 4A000001 ); path = App; sourceTree = "<group>"; };
-        		8A000001 /* Frameworks */ = {isa = PBXGroup; name = Frameworks; sourceTree = "<group>"; };
-        		9A000001 /* Products */ = {isa = PBXGroup; children = ( 3A000001 ); name = Products; sourceTree = "<group>"; };
-        		10A000001 /* App */ = {isa = PBXNativeTarget; buildConfigurationList = 11A000001; buildPhases = ( 12A000001, 5A000001 ); buildRules = ( ); dependencies = ( ); name = App; productName = App; productReference = 3A000001; productType = "com.apple.product-type.application"; };
-        		12A000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ( 1A000001 ); runOnlyForDeploymentPostprocessing = 0; };
-        		13A000001 /* Project object */ = {isa = PBXProject; attributes = { BuildIndependentTargetsInParallel = 1; }; buildConfigurationList = 14A000002; compatibilityVersion = "Xcode 3.2"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = ( en, Base ); mainGroup = 6A000001; productRefGroup = 9A000001; projectDirPath = ""; projectRoot = ""; targets = ( 10A000001 ); };
-        		11A000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; IPHONEOS_DEPLOYMENT_TARGET = 13.0; MTL_ENABLE_DEBUG_INFO = NO; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
-        		15A000001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = App/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 13.0; LD_RUNPATH_SEARCH_PATHS = ( "@executable_path/Frameworks" ); PRODUCT_BUNDLE_IDENTIFIER = com.bionicdrone.visionserver; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
-        		11A000001 /* Build configuration list for PBXNativeTarget "App" */ = {isa = XCConfigurationList; buildConfigurations = ( 11A000001 ); defaultConfigurationIsVisible = 0; };
-        		14A000002 /* Build configuration list for PBXProject "App" */ = {isa = XCConfigurationList; buildConfigurations = ( 15A000001 ); defaultConfigurationIsVisible = 0; };
-        	};
-        	rootObject = 13A000001;
-        }
-        PBXPROJ
-        ls -la App.xcodeproj/
-    
-    - name: Build
-      run: |
-        mkdir -p build
-        xcodebuild archive \
-          -project App.xcodeproj \
-          -scheme App \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          -archivePath build/App.xcarchive \
-          2>&1 | tee build.log
-        echo "=== Build complete ==="
-        ls -la build/
-        ls -la build/App.xcarchive/
-        ls -la build/App.xcarchive/Products/Applications/
-    
-    - name: Package IPA
-      run: |
-        # Use Python to create IPA
-        python3 << 'PYTHON'
-        import os
-        import zipfile
         
-        archive_path = 'build/App.xcarchive'
-        payload_dir = 'Payload'
-        ipa_path = 'App.ipa'
+        xcodebuild -exportArchive \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -exportPath build \
+          -exportOptionsPlist export.plist \
+          2>&1 | tee export.log
         
-        # Clean up any existing files
-        import shutil
-        if os.path.exists(payload_dir):
-            shutil.rmtree(payload_dir)
-        if os.path.exists(ipa_path):
-            os.remove(ipa_path)
-        
-        # Create Payload directory
-        os.makedirs(payload_dir, exist_ok=True)
-        
-        # Copy the app bundle
-        app_bundle = os.path.join(archive_path, 'Products', 'Applications', 'App.app')
-        print(f"Copying {app_bundle} to {payload_dir}/")
-        shutil.copytree(app_bundle, os.path.join(payload_dir, 'App.app'))
-        
-        # Create IPA (it's just a zip file)
-        print(f"Creating {ipa_path}...")
-        with zipfile.ZipFile(ipa_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-            for root, dirs, files in os.walk(payload_dir):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    arc_name = os.path.relpath(file_path, payload_dir)
-                    zf.write(file_path, arc_name)
-                    print(f"  Added: {arc_name}")
-        
-        # Verify
-        size = os.path.getsize(ipa_path)
-        print(f"✓ IPA created: {ipa_path} ({size} bytes)")
-        PYTHON
-        
-        ls -la App.ipa
-        unzip -l App.ipa
+        echo "=== Export Result ==="
+        ls -la build/*.ipa 2>/dev/null || echo "IPA not found"
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: App
-        path: App.ipa
+        name: BionicDroneVisionServer
+        path: build/*.ipa
+        if-no-files-found: error
