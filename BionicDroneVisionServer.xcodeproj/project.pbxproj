@@ -7,16 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		10000001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000001; };
+		1A000001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A000001; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		20000001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		30000001 /* BionicDroneVisionServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BionicDroneVisionServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A000001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		3A000001 /* BionicDroneVisionServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BionicDroneVisionServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		40000001 /* Frameworks */ = {
+		5A000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -26,32 +27,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		50000001 = {
+		6A000001 = {
 			isa = PBXGroup;
 			children = (
-				50000002 /* App */,
-				50000003 /* Frameworks */,
-				50000004 /* Products */,
+				7A000001 /* BionicDroneVisionServer */,
+				8A000001 /* Frameworks */,
+				9A000001 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		50000002 /* App */ = {
+		7A000001 /* BionicDroneVisionServer */ = {
 			isa = PBXGroup;
 			children = (
-				20000001,
+				2A000001,
+				4A000001,
 			);
-			path = App;
+			path = BionicDroneVisionServer;
 			sourceTree = "<group>";
 		};
-		50000003 /* Frameworks */ = {
+		8A000001 /* Frameworks */ = {
 			isa = PBXGroup;
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		50000004 /* Products */ = {
+		9A000001 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				30000001,
+				3A000001,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,12 +61,12 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		60000001 /* BionicDroneVisionServer */ = {
+		10A000001 /* BionicDroneVisionServer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 70000001;
+			buildConfigurationList = 11A000001;
 			buildPhases = (
-				80000001,
-				40000001,
+				12A000001,
+				5A000001,
 			);
 			buildRules = (
 			);
@@ -72,20 +74,20 @@
 			);
 			name = BionicDroneVisionServer;
 			productName = BionicDroneVisionServer;
-			productReference = 30000001;
+			productReference = 3A000001;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		90000001 /* Project object */ = {
+		13A000001 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1540;
 			};
-			buildConfigurationList = 70000002;
+			buildConfigurationList = 14A000002;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -93,29 +95,29 @@
 				en,
 				Base,
 			);
-			mainGroup = 50000001;
-			productRefGroup = 50000004;
+			mainGroup = 6A000001;
+			productRefGroup = 9A000001;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				60000001,
+				10A000001,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		80000001 /* Sources */ = {
+		12A000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				10000001,
+				1A000001,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		70000001 /* Release */ = {
+		11A000001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -130,7 +132,7 @@
 			};
 			name = Release;
 		};
-		70000002 /* Release */ = {
+		15A000001 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -139,7 +141,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "App/Info.plist";
+				INFOPLIST_FILE = BionicDroneVisionServer/Info.plist;
 				IOS_DEPLOYMENT_TARGET = 17.0;
 				LLVM_LTO = thin;
 				MARKETING_VERSION = 1.0;
@@ -154,22 +156,22 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		70000001 /* Build configuration list for PBXNativeTarget "BionicDroneVisionServer" */ = {
+		11A000001 /* Build configuration list for PBXNativeTarget "BionicDroneVisionServer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				70000001,
+				11A000001,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
-		70000002 /* Build configuration list for PBXProject "BionicDroneVisionServer" */ = {
+		14A000002 /* Build configuration list for PBXProject "BionicDroneVisionServer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				70000002,
+				15A000001,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 
 	};
-	rootObject = 90000001;
+	rootObject = 13A000001;
 }
