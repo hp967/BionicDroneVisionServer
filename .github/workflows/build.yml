@@ -21,20 +21,17 @@ jobs:
     - name: Add llama.cpp headers
       run: |
         mkdir -p BionicDroneVisionServer/llama.cpp/include
-        cp llama.cpp/include/clip.h BionicDroneVisionServer/llama.cpp/include/
-        cp llama.cpp/include/llama.h BionicDroneVisionServer/llama.cpp/include/
-        cp llama.cpp/include/llava.h BionicDroneVisionServer/llama.cpp/include/
-        cp -r llama.cpp/ggml/include/* BionicDroneVisionServer/llama.cpp/include/
-        cp llama.cpp/src/*.h BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
+        cp include/clip.h BionicDroneVisionServer/llama.cpp/include/
+        cp include/llama.h BionicDroneVisionServer/llama.cpp/include/
+        cp include/llava.h BionicDroneVisionServer/llama.cpp/include/
+        cp -r ggml/include/* BionicDroneVisionServer/llama.cpp/include/
+        cp src/*.h BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
         
     - name: Add llama.cpp sources
       run: |
         mkdir -p BionicDroneVisionServer/llama.cpp/src
-        cp llama.cpp/src/llama.cpp BionicDroneVisionServer/llama.cpp/
         cp llama.cpp/src/llama-grammar.cpp BionicDroneVisionServer/llama.cpp/src/
         cp llama.cpp/src/llama-sampling.cpp BionicDroneVisionServer/llama.cpp/src/
-        cp llama.cpp/ggml/src/*.c BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
-        cp llama.cpp/ggml/src/*.m BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
         
     - name: Build Archive
       run: |
