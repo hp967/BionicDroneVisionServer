@@ -19,11 +19,6 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Generate Xcode Project
-      run: |
-        swift package generate-xcodeproj
-        ls -la *.xcodeproj/
-    
     - name: Build Archive
       run: |
         xcodebuild archive \
