@@ -22,13 +22,13 @@ jobs:
     - name: Build Archive
       run: |
         xcodebuild archive \
-          -project BionicDroneVisionServer.xcodeproj \
-          -scheme BionicDroneVisionServer \
+          -project App.xcodeproj \
+          -scheme App \
           -configuration Release \
           -destination 'generic/platform=iOS' \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGN_IDENTITY="" \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -archivePath build/App.xcarchive \
           2>&1 | tail -100
         ls -la build/
     
@@ -48,7 +48,7 @@ jobs:
         EOF
         
         xcodebuild -exportArchive \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -archivePath build/App.xcarchive \
           -exportPath build/Products \
           -exportOptionsPlist export.plist
         ls -la build/Products/
@@ -56,5 +56,5 @@ jobs:
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: BionicDroneVisionServer
-        path: build/Products/BionicDroneVisionServer.ipa
+        name: App
+        path: build/Products/App.ipa
