@@ -271,23 +271,25 @@ jobs:
         tail -50 build.log
         ls -la build/
     
-    - name: Export IPA using ditto
+    - name: Create IPA manually
       run: |
         echo "Checking archive contents..."
         ls -la build/App.xcarchive/
         ls -la build/App.xcarchive/Products/Applications/
         
-        # Check if IPA exists in archive
-        find build/App.xcarchive -name "*.ipa" -type f
+        # Copy the app bundle to a temporary location
+        mkdir -p Payload
+        cp -r build/App.xcarchive/Products/Applications/App.app Payload/
         
-        # Try to create IPA using ditto
-        ditto build/App.xcarchive/Products/Applications/App.app build/App.xcarchive/Products/Applications/App.ipa
+        # Create IPA (it's just a zip file with Payload directory)
+        zip -r App.ipa Payload/
         
         # Verify
-        ls -la build/App.xcarchive/Products/Applications/
+        ls -la App.ipa
+        unzip -l App.ipa
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: App
-        path: build/App.xcarchive/Products/Applications/App.ipa
+        path: App.ipa
