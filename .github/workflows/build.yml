@@ -21,7 +21,7 @@ jobs:
     
     - name: Build with Swift Package Manager
       run: |
-        swift build --package-path BionicDroneVisionServer -c release
+        swift build -c release
         echo "Build successful!"
         ls -la .build/release/
     
