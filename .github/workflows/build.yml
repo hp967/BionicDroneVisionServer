@@ -2,8 +2,6 @@ name: Build iOS IPA
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 
 jobs:
   build:
@@ -19,52 +17,39 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Show environment
+    - name: Environment
       run: |
         xcodebuild -version
         swift --version
-        xcrun --sdk iphoneos --show-sdk-path
     
-    - name: Create iOS Application
+    - name: Create iOS App
       run: |
-        # Create source directory
         mkdir -p Sources
         
-        # Create main.swift
-        cat > Sources/main.swift << 'SWIFT'
+        cat > Sources/main.swift << 'EOF'
         import SwiftUI
         
         @main
         struct BionicDroneVisionServerApp: App {
             var body: some Scene {
                 WindowGroup {
-                    VStack(spacing: 20) {
+                    VStack {
                         Image(systemName: "drone.front.closed")
-                            .font(.system(size: 80))
-                            .foregroundColor(.blue)
-                        
-                        Text("Bionic Drone Vision")
+                            .font(.system(size: 60))
+                        Text("Bionic Drone Vision Server")
                             .font(.title)
-                            .fontWeight(.bold)
-                        
-                        Text("Server Ready")
-                            .font(.caption)
-                            .foregroundColor(.gray)
                     }
                     .padding()
                 }
             }
         }
-        SWIFT
+        EOF
         
-        # Create Info.plist
-        cat > Sources/Info.plist << 'PLIST'
+        cat > Sources/Info.plist << 'EOF'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
-            <key>CFBundleDevelopmentRegion</key>
-            <string>en</string>
             <key>CFBundleExecutable</key>
             <string>$(EXECUTABLE_NAME)</string>
             <key>CFBundleIdentifier</key>
@@ -81,185 +66,94 @@ jobs:
             <string>1</string>
             <key>LSRequiresIPhoneOS</key>
             <true/>
-            <key>UIApplicationSceneManifest</key>
-            <dict>
-                <key>UIApplicationSupportsMultipleScenes</key>
-                <false/>
-            </dict>
-            <key>UIApplicationSupportsIndirectInputEvents</key>
-            <true/>
             <key>UILaunchScreen</key>
             <dict/>
             <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>arm64</string>
-            </array>
+            <array><string>arm64</string></array>
             <key>UISupportedInterfaceOrientations</key>
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-                <string>UIInterfaceOrientationLandscapeLeft</string>
-                <string>UIInterfaceOrientationLandscapeRight</string>
-            </array>
+            <array><string>UIInterfaceOrientationPortrait</string></array>
+        </dict>
+        </plist>
+        EOF
+        
+        ls -la Sources/
+    
+    - name: Build Archive
+      run: |
+        # Create a proper Xcode project using xcodegen
+        brew install xcodegen
+        
+        cat > Project.yml << 'YAML'
+        name: BionicDroneVisionServer
+        options:
+          bundleIdPrefix: com.bionicdrone
+          deploymentTarget:
+            iOS: "16.0"
+          
+        targets:
+          BionicDroneVisionServer:
+            type: application
+            platform: iOS
+            sources:
+              - path: Sources
+            settings:
+              base:
+                CODE_SIGNING_REQUIRED: NO
+                CODE_SIGNING_ALLOWED: NO
+                PRODUCT_BUNDLE_IDENTIFIER: com.bionicdrone.visionserver
+        YAML
+        
+        xcodegen generate
+        
+        echo "=== Generated Project ==="
+        ls -la *.xcodeproj/
+        
+        echo "=== Building Archive ==="
+        xcodebuild archive \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          2>&1 | tee build.log
+        
+        echo "=== Build Result ==="
+        if [ -d "build/BionicDroneVisionServer.xcarchive" ]; then
+            echo "SUCCESS: Archive created"
+            ls -la build/BionicDroneVisionServer.xcarchive/Products/Applications/
+        else
+            echo "FAILED: Archive not found"
+            tail -50 build.log
+            exit 1
+        fi
+    
+    - name: Export IPA
+      if: success()
+      run: |
+        cat > export.plist << 'PLIST'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>development</string>
+            <key>uploadSymbols</key>
+            <false/>
         </dict>
         </plist>
         PLIST
         
-        # Create Assets
-        mkdir -p Resources/Assets.xcassets/AppIcon.appiconset
-        cat > Resources/Assets.xcassets/Contents.json << 'JSON'
-        {
-          "info" : {
-            "author" : "xcode",
-            "version" : 1
-          }
-        }
-        JSON
-        cat > Resources/Assets.xcassets/AppIcon.appiconset/Contents.json << 'JSON'
-        {
-          "images" : [
-            {
-              "idiom" : "universal",
-              "platform" : "ios",
-              "size" : "1024x1024"
-            }
-          ],
-          "info" : {
-            "author" : "xcode",
-            "version" : 1
-          }
-        }
-        JSON
+        xcodebuild -exportArchive \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -exportPath build \
+          -exportOptionsPlist export.plist \
+          2>&1 | tee export.log
         
-        echo "=== Project Structure ==="
-        find . -type f -not -path "./.git/*" -not -path "./.github/*" | head -20
+        ls -la build/*.ipa 2>/dev/null || echo "IPA not created"
     
-    - name: Create Package.swift
-      run: |
-        cat > Package.swift << 'EOF'
-        // swift-tools-version:5.7
-        import PackageDescription
-        
-        let package = Package(
-            name: "BionicDroneVisionServer",
-            platforms: [
-                .iOS(.v16)
-            ],
-            targets: [
-                .executableTarget(
-                    name: "BionicDroneVisionServer",
-                    dependencies: [],
-                    path: "Sources",
-                    resources: [
-                        .copy("Resources")
-                    ]
-                )
-            ]
-        )
-        EOF
-        cat Package.swift
-    
-    - name: Build with Swift Package Manager
-      run: |
-        mkdir -p build
-        swift build \
-          --package-path . \
-          --configuration release \
-          --build-path build \
-          --triple arm64-apple-ios16.0-simulator \
-          2>&1 | tee build.log
-        
-        echo "=== Build Result ==="
-        ls -la build/.build/release/ 2>/dev/null || echo "Build failed"
-    
-    - name: Create Xcode Project from SPM
-      run: |
-        # Generate Xcode project
-        swift package generate-xcodeproj \
-          --xcconfig-overrides build/xcconfig.xcconfig \
-          2>&1 || echo "generate-xcodeproj failed, continuing..."
-        
-        # Check if project was created
-        ls -la *.xcodeproj 2>/dev/null || echo "No xcodeproj created"
-        
-        # Create a minimal xcconfig
-        cat > build/xcconfig.xcconfig << 'CONFIG'
-        IPHONEOS_DEPLOYMENT_TARGET = 16.0
-        SDKROOT = iphoneos
-        CONFIG
-        cat build/xcconfig.xcconfig
-    
-    - name: Build Archive
-      run: |
-        mkdir -p build
-        
-        # Try to build using xcodebuild if project exists
-        if [ -f BionicDroneVisionServer.xcodeproj ]; then
-            xcodebuild archive \
-              -project BionicDroneVisionServer.xcodeproj \
-              -scheme BionicDroneVisionServer \
-              -configuration Release \
-              -destination 'generic/platform=iOS' \
-              -archivePath build/BionicDroneVisionServer.xcarchive \
-              CODE_SIGNING_ALLOWED=NO \
-              2>&1 | tee xcodebuild.log
-        else
-            # Fallback: try direct swift build for iOS
-            echo "No Xcode project, trying alternative build..."
-            
-            # Create a simple shell script to build
-            cat > build_app.sh << 'BUILDSCRIPT'
-            #!/bin/bash
-            set -e
-            
-            # Get iOS SDK path
-            SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-            echo "Using SDK: $SDK"
-            
-            # Build for iOS
-            swift build \
-              -c release \
-              --triple arm64-apple-ios \
-              --build-path .build-ios \
-              2>&1
-            
-            echo "Build completed"
-            ls -la .build-ios/release/
-            BUILDSCRIPT
-            
-            chmod +x build_app.sh
-            ./build_app.sh
-        fi
-        
-        echo "=== Final Result ==="
-        ls -la build/ 2>/dev/null
-        ls -la .build*/release/ 2>/dev/null || true
-    
-    - name: Prepare IPA (if built)
+    - name: Upload IPA
       if: success()
-      run: |
-        # Try to find any built binary
-        echo "Looking for built artifacts..."
-        find . -name "*.exe" -o -name "BionicDroneVisionServer" -type f 2>/dev/null | head -5
-        
-        # Create a placeholder IPA if we have the binary
-        # (In real scenario, we'd need proper iOS code signing)
-        mkdir -p Payload
-        find . -name "BionicDroneVisionServer" -type f -exec cp {} Payload/ 2>/dev/null || true
-        
-        if [ -d "Payload" ] && [ "$(ls Payload/ 2>/dev/null)" ]; then
-            zip -r BionicDroneVisionServer.ipa Payload/
-            ls -la *.ipa
-        else
-            echo "Warning: No iOS binary found for IPA creation"
-            echo "This is expected - iOS building requires Xcode project"
-        fi
-    
-    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: build-output
-        path: |
-          *.ipa
-          *.log
-          build/
-        if-no-files-found: warn
+        name: BionicDroneVisionServer
+        path: build/*.ipa
