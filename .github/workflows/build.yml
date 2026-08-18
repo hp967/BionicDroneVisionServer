@@ -118,21 +118,57 @@ jobs:
           CODE_SIGN_IDENTITY="" \
           -archivePath build/App.xcarchive \
           2>&1 | tee build.log
-        echo "=== Archive Contents ==="
-        find build/App.xcarchive -type f 2>/dev/null | head -30
+        echo "=== Build complete ==="
+        ls -la build/
+        ls -la build/App.xcarchive/
+        ls -la build/App.xcarchive/Products/Applications/
     
     - name: Package IPA
       run: |
-        echo "Checking archive..."
-        find build/App.xcarchive -type f 2>/dev/null
+        # Use Python to create IPA
+        python3 << 'PYTHON'
+        import os
+        import zipfile
+        
+        archive_path = 'build/App.xcarchive'
+        payload_dir = 'Payload'
+        ipa_path = 'App.ipa'
+        
+        # Clean up any existing files
+        import shutil
+        if os.path.exists(payload_dir):
+            shutil.rmtree(payload_dir)
+        if os.path.exists(ipa_path):
+            os.remove(ipa_path)
         
         # Create Payload directory
-        mkdir -p Payload
-        cp -r build/App.xcarchive/Products/Applications/App.app Payload/
+        os.makedirs(payload_dir, exist_ok=True)
         
-        # Create IPA using zip
-        zip -r App.ipa Payload/
+        # Copy the app bundle
+        app_bundle = os.path.join(archive_path, 'Products', 'Applications', 'App.app')
+        print(f"Copying {app_bundle} to {payload_dir}/")
+        shutil.copytree(app_bundle, os.path.join(payload_dir, 'App.app'))
+        
+        # Create IPA (it's just a zip file)
+        print(f"Creating {ipa_path}...")
+        with zipfile.ZipFile(ipa_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for root, dirs, files in os.walk(payload_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arc_name = os.path.relpath(file_path, payload_dir)
+                    zf.write(file_path, arc_name)
+                    print(f"  Added: {arc_name}")
         
         # Verify
+        size = os.path.getsize(ipa_path)
+        print(f"✓ IPA created: {ipa_path} ({size} bytes)")
+        PYTHON
+        
         ls -la App.ipa
         unzip -l App.ipa
+    
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: App
+        path: App.ipa
