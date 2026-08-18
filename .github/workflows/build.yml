@@ -30,9 +30,9 @@ jobs:
     - name: Add llama.cpp sources
       run: |
         mkdir -p BionicDroneVisionServer/llama.cpp/src
-        cp src/llama.cpp BionicDroneVisionServer/llama.cpp/
-        cp src/llama-grammar.cpp BionicDroneVisionServer/llama.cpp/src/
-        cp src/llama-sampling.cpp BionicDroneVisionServer/llama.cpp/src/
+        cp llama.cpp/src/llama.cpp BionicDroneVisionServer/llama.cpp/
+        cp llama.cpp/src/llama-grammar.cpp BionicDroneVisionServer/llama.cpp/src/
+        cp llama.cpp/src/llama-sampling.cpp BionicDroneVisionServer/llama.cpp/src/
         cp llama.cpp/ggml/src/*.c BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
         cp llama.cpp/ggml/src/*.m BionicDroneVisionServer/llama.cpp/src/ 2>/dev/null || true
         
