@@ -19,44 +19,18 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Build with Swift Package Manager
-      run: |
-        echo "Building with Swift Package Manager..."
-        swift build -c release
-        echo "Build successful!"
-    
     - name: Create Xcode Project
       run: |
-        echo "Creating Xcode project..."
-        xcodebuild -create-xcode-project \
-          -projectName BionicDroneVisionServer \
-          -folderPath . \
-          -scheme BionicDroneVisionServer \
-          -target BionicDroneVisionServer \
-          -targetDeviceFamily iphone,iPad \
-          -deploymentTarget 17.0 \
-          -interface SwiftUI \
-          -language Swift \
-          -output BionicDroneVisionServer.xcodeproj
+        xcodebuild -create-xcode-project           -projectName BionicDroneVisionServer           -folderPath .           -scheme BionicDroneVisionServer           -target BionicDroneVisionServer           -targetDeviceFamily iphone,iPad           -deploymentTarget 17.0           -interface SwiftUI           -language Swift           -output BionicDroneVisionServer.xcodeproj
         ls -la *.xcodeproj/
     
     - name: Build Archive
       run: |
-        echo "Building archive..."
-        xcodebuild archive \
-          -project BionicDroneVisionServer.xcodeproj \
-          -scheme BionicDroneVisionServer \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
-          2>&1 | tail -30
+        xcodebuild archive           -project BionicDroneVisionServer.xcodeproj           -scheme BionicDroneVisionServer           -configuration Release           -destination 'generic/platform=iOS'           CODE_SIGNING_REQUIRED=NO           CODE_SIGN_IDENTITY=""           -archivePath build/BionicDroneVisionServer.xcarchive           2>&1 | tail -50
         ls -la build/
     
     - name: Export IPA
       run: |
-        echo "Exporting IPA..."
         cat > export.plist << 'PLIST'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -70,10 +44,7 @@ jobs:
         </plist>
         PLIST
         
-        xcodebuild -exportArchive \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
-          -exportPath build/Products \
-          -exportOptionsPlist export.plist
+        xcodebuild -exportArchive           -archivePath build/BionicDroneVisionServer.xcarchive           -exportPath build/Products           -exportOptionsPlist export.plist
         ls -la build/Products/
     
     - name: Upload IPA
