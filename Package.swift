@@ -17,7 +17,7 @@ let package = Package(
         .executableTarget(
             name: "BionicDroneVisionServer",
             dependencies: [],
-            path: "App"
+            path: "Sources"
         )
     ]
 )
