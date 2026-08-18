@@ -1,22 +1,23 @@
 import SwiftUI
 
 @main
-struct App: App {
+struct BionicDroneVisionServerApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VStack(spacing: 20) {
+                Image(systemName: "drone.front.closed")
+                    .font(.system(size: 80))
+                    .foregroundColor(.blue)
+                
+                Text("Bionic Drone Vision")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                Text("Server Ready")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            .padding()
         }
-    }
-}
-
-struct ContentView: View {
-    var body: some View {
-        VStack {
-            Image(systemName: "drone")
-                .font(.system(size: 60))
-            Text("Bionic Drone Vision")
-                .font(.title)
-        }
-        .padding()
     }
 }
