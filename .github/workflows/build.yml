@@ -21,15 +21,15 @@ jobs:
     
     - name: Build with Swift Package Manager
       run: |
-        cd BionicDroneVisionServer
-        swift build --product BionicDroneVisionServer -c release
+        swift build --package-path BionicDroneVisionServer -c release
+        echo "Build successful!"
+        ls -la .build/release/
     
     - name: Create Xcode Project
       run: |
-        cd BionicDroneVisionServer
         xcodebuild -create-xcode-project \
           -projectName BionicDroneVisionServer \
-          -folderPath .. \
+          -folderPath . \
           -scheme BionicDroneVisionServer \
           -target BionicDroneVisionServer \
           -targetDeviceFamily iphone,iPad \
@@ -40,7 +40,6 @@ jobs:
     
     - name: Build Archive
       run: |
-        cd BionicDroneVisionServer
         xcodebuild archive \
           -project BionicDroneVisionServer.xcodeproj \
           -scheme BionicDroneVisionServer \
@@ -52,7 +51,6 @@ jobs:
     
     - name: Export IPA
       run: |
-        cd BionicDroneVisionServer
         cat > export.plist << 'EOF'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -75,4 +73,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: BionicDroneVisionServer
-        path: BionicDroneVisionServer/build/Products/BionicDroneVisionServer.ipa
+        path: build/Products/BionicDroneVisionServer.ipa
