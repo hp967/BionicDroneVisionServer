@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Build IPA
-    runs-on: macos-14
+    runs-on: macos-13
     
     steps:
     - name: Checkout
@@ -17,10 +17,84 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.4'
+        xcode-version: '14.3.1'
+    
+    - name: Create minimal iOS app
+      run: |
+        mkdir -p App
+        cat > App/main.swift << 'EOF'
+        import SwiftUI
+        @main
+        struct App: App {
+            var body: some Scene {
+                WindowGroup {
+                    Text("Hello")
+                }
+            }
+        }
+        EOF
+        cat > App/Info.plist << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>CFBundleDevelopmentRegion</key>
+            <string>en</string>
+            <key>CFBundleExecutable</key>
+            <string>$(EXECUTABLE_NAME)</string>
+            <key>CFBundleIdentifier</key>
+            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            <key>CFBundleInfoDictionaryVersion</key>
+            <string>6.0</string>
+            <key>CFBundleName</key>
+            <string>$(PRODUCT_NAME)</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>1.0</string>
+            <key>CFBundleVersion</key>
+            <string>1</string>
+            <key>LSRequiresIPhoneOS</key>
+            <true/>
+            <key>UIApplicationSceneManifest</key>
+            <dict>
+                <key>UIApplicationSupportsMultipleScenes</key>
+                <false/>
+            </dict>
+            <key>UIApplicationSupportsIndirectInputEvents</key>
+            <true/>
+            <key>UILaunchScreen</key>
+            <dict/>
+            <key>UIRequiredDeviceCapabilities</key>
+            <array>
+                <string>arm64</string>
+            </array>
+            <key>UISupportedInterfaceOrientations</key>
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+            </array>
+        </dict>
+        </plist>
+        EOF
+        ls -la App/
+    
+    - name: Create Xcode project
+      run: |
+        xcodebuild -create-xcode-project \
+          -projectName App \
+          -folderPath . \
+          -scheme App \
+          -target App \
+          -targetDeviceFamily iphone \
+          -deploymentTarget 13.0 \
+          -interface SwiftUI \
+          -language Swift \
+          -output App.xcodeproj
+        ls -la App.xcodeproj/
     
     - name: Build Archive
       run: |
+        mkdir -p build
         xcodebuild archive \
           -project App.xcodeproj \
           -scheme App \
