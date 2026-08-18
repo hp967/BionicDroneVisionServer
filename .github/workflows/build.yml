@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: Test Build
 
 on:
   push:
@@ -6,123 +6,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build IPA
+  test:
+    name: Test
     runs-on: macos-latest
     
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     
-    - name: List files
-      run: find . -type f -not -path './.git/*'
+    - name: Print Hello
+      run: echo "Hello from GitHub Actions!"
     
-    - name: Create iOS app
+    - name: Check Xcode
       run: |
-        mkdir -p App
-        cat > App/main.swift << 'SWIFT'
-        import SwiftUI
-        @main
-        struct App: App {
-            var body: some Scene {
-                WindowGroup {
-                    Text("Hello iOS")
-                }
-            }
-        }
-        SWIFT
-        cat > App/Info.plist << 'PLIST'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>CFBundleDevelopmentRegion</key>
-            <string>en</string>
-            <key>CFBundleExecutable</key>
-            <string>$(EXECUTABLE_NAME)</string>
-            <key>CFBundleIdentifier</key>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            <key>CFBundleInfoDictionaryVersion</key>
-            <string>6.0</string>
-            <key>CFBundleName</key>
-            <string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-            <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
-            <key>CFBundleVersion</key>
-            <string>1</string>
-            <key>LSRequiresIPhoneOS</key>
-            <true/>
-            <key>UIApplicationSceneManifest</key>
-            <dict>
-                <key>UIApplicationSupportsMultipleScenes</key>
-                <false/>
-            </dict>
-            <key>UIApplicationSupportsIndirectInputEvents</key>
-            <true/>
-            <key>UILaunchScreen</key>
-            <dict/>
-            <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>arm64</string>
-            </array>
-            <key>UISupportedInterfaceOrientations</key>
-            <array>
-                <string>UIInterfaceOrientationPortrait</string>
-            </array>
-        </dict>
-        </plist>
-        PLIST
-        ls -la App/
-    
-    - name: Build with xcodebuild
-      run: |
-        xcodebuild -create-xcode-project \
-          -projectName App \
-          -folderPath . \
-          -scheme App \
-          -target App \
-          -targetDeviceFamily iphone \
-          -deploymentTarget 13.0 \
-          -interface SwiftUI \
-          -language Swift \
-          -output App.xcodeproj
-        ls -la App.xcodeproj/
-        mkdir -p build
-        xcodebuild archive \
-          -project App.xcodeproj \
-          -scheme App \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          -archivePath build/App.xcarchive
-        ls -la build/
-    
-    - name: Export IPA
-      run: |
-        cat > export.plist << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>uploadSymbols</key>
-            <false/>
-        </dict>
-        </plist>
-        EOF
-        
-        xcodebuild -exportArchive \
-          -archivePath build/App.xcarchive \
-          -exportPath build/Products \
-          -exportOptionsPlist export.plist
-        ls -la build/Products/
-    
-    - name: Upload IPA
-      uses: actions/upload-artifact@v4
-      with:
-        name: App
-        path: build/Products/App.ipa
+        xcodebuild -version
+        swift --version
