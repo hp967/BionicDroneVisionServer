@@ -40,9 +40,9 @@ let package = Package(
             ],
             publicHeadersPath: "spm-headers",
             cSettings: [
-                .headerSearchPath("../llama.cpp/include"),
-                .headerSearchPath("../llama.cpp/ggml/include"),
-                .headerSearchPath("../llama.cpp/src"),
+                .headerSearchPath("llama.cpp/include"),
+                .headerSearchPath("llama.cpp/ggml/include"),
+                .headerSearchPath("llama.cpp/src"),
                 .define("GGML_METAL"),
                 .define("GGML_OPENMP"),
             ]
