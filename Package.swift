@@ -7,14 +7,14 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
-        .library(
+        .executable(
             name: "BionicDroneVisionServer",
             targets: ["BionicDroneVisionServer"]
         ),
     ],
     dependencies: [],
     targets: [
-        .target(
+        .executableTarget(
             name: "BionicDroneVisionServer",
             dependencies: [],
             path: "App"
