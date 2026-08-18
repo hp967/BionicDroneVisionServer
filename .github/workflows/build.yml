@@ -19,21 +19,47 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Build with Swift
+    - name: Generate Xcode Project
       run: |
-        swift build -c release --swift-sdk iphoneos-arm64
-        ls -la .build/release/
+        swift package generate-xcodeproj
+        ls -la *.xcodeproj/
     
-    - name: Create IPA
+    - name: Build Archive
       run: |
-        ditto -ck --rsrc --sequesterRsrc .build/release/BionicDroneVisionServer build/app.zip
-        mkdir -p Payload
-        cp .build/release/BionicDroneVisionServer Payload/BionicDroneVisionServer
-        ditto -ck --rsrc --sequesterRsrc Payload BionicDroneVisionServer.ipa
-        ls -la *.ipa
+        xcodebuild archive \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          2>&1 | tail -100
+        ls -la build/
+    
+    - name: Export IPA
+      run: |
+        cat > export.plist << 'PLIST'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>development</string>
+            <key>uploadSymbols</key>
+            <false/>
+        </dict>
+        </plist>
+        PLIST
+        
+        xcodebuild -exportArchive \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -exportPath build/Products \
+          -exportOptionsPlist export.plist
+        ls -la build/Products/
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: BionicDroneVisionServer
-        path: BionicDroneVisionServer.ipa
+        path: build/Products/BionicDroneVisionServer.ipa
