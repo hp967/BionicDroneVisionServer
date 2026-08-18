@@ -268,46 +268,26 @@ jobs:
           CODE_SIGN_IDENTITY="" \
           -archivePath build/App.xcarchive \
           2>&1 | tee build.log
-        tail -30 build.log
+        tail -50 build.log
         ls -la build/
     
-    - name: Export IPA
+    - name: Export IPA using ditto
       run: |
-        echo "Checking archive..."
+        echo "Checking archive contents..."
         ls -la build/App.xcarchive/
         ls -la build/App.xcarchive/Products/Applications/
         
-        # Create export options plist
-        cat > export.plist << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>uploadSymbols</key>
-            <false/>
-            <key>compileBitcode</key>
-            <false/>
-            <key>thinning</key>
-            <string><none></string>
-        </dict>
-        </plist>
-        EOF
+        # Check if IPA exists in archive
+        find build/App.xcarchive -name "*.ipa" -type f
         
-        echo "Exporting IPA..."
-        xcrun xcodebuild -exportArchive \
-          -archivePath build/App.xcarchive \
-          -exportPath build/Products \
-          -exportOptionsPlist export.plist \
-          2>&1 | tee export.log
+        # Try to create IPA using ditto
+        ditto build/App.xcarchive/Products/Applications/App.app build/App.xcarchive/Products/Applications/App.ipa
         
-        echo "Export output:"
-        tail -20 export.log
-        ls -la build/Products/
+        # Verify
+        ls -la build/App.xcarchive/Products/Applications/
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
         name: App
-        path: build/Products/App.ipa
+        path: build/App.xcarchive/Products/Applications/App.ipa
