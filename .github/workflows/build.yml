@@ -268,11 +268,15 @@ jobs:
           CODE_SIGN_IDENTITY="" \
           -archivePath build/App.xcarchive \
           2>&1 | tee build.log
-        tail -50 build.log
+        tail -30 build.log
         ls -la build/
     
     - name: Export IPA
       run: |
+        echo "Checking archive..."
+        ls -la build/App.xcarchive/
+        
+        # Create export options plist
         cat > export.plist << 'EOF'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -282,14 +286,23 @@ jobs:
             <string>development</string>
             <key>uploadSymbols</key>
             <false/>
+            <key>compileBitcode</key>
+            <false/>
+            <key>thinning</key>
+            <string><none></string>
         </dict>
         </plist>
         EOF
         
+        echo "Exporting IPA..."
         xcodebuild -exportArchive \
           -archivePath build/App.xcarchive \
           -exportPath build/Products \
-          -exportOptionsPlist export.plist
+          -exportOptionsPlist export.plist \
+          2>&1 | tee export.log
+        
+        echo "Export output:"
+        tail -20 export.log
         ls -la build/Products/
     
     - name: Upload IPA
