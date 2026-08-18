@@ -28,8 +28,7 @@ jobs:
           -destination 'generic/platform=iOS' \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGN_IDENTITY="" \
-          -archivePath build/App.xcarchive \
-          2>&1 | tail -100
+          -archivePath build/App.xcarchive
         ls -la build/
     
     - name: Export IPA
