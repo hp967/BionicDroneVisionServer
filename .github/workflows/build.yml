@@ -18,49 +18,27 @@ jobs:
       with:
         xcode-version: '15.4'
         
-    - name: Prepare headers
+    - name: Prepare source files
       run: |
-        mkdir -p BionicDroneVisionServer/llama.cpp/include
-        cp include/*.h BionicDroneVisionServer/llama.cpp/include/
-        cp -r ggml/include/* BionicDroneVisionServer/llama.cpp/include/
+        mkdir -p Sources/BionicDroneVisionServer
+        cp *.swift Sources/BionicDroneVisionServer/
+        cp BionicDroneVisionServer/*.swift Sources/BionicDroneVisionServer/
+        cp BionicDroneVisionServer-Bridging-Header.h Sources/
         
-    - name: Prepare sources
+    - name: Prepare llama.cpp
       run: |
-        mkdir -p BionicDroneVisionServer/llama.cpp/src
-        cp src/*.cpp BionicDroneVisionServer/llama.cpp/src/
-        cp src/*.h BionicDroneVisionServer/llama.cpp/src/
+        mkdir -p Sources/llama
+        cp include/*.h Sources/llama/
+        cp -r ggml/include/* Sources/llama/
+        cp src/*.cpp Sources/llama/
+        cp src/*.h Sources/llama/
         
-    - name: Build Archive
+    - name: Build
       run: |
-        xcodebuild archive \
-          -project BionicDroneVisionServer.xcodeproj \
-          -scheme BionicDroneVisionServer \
-          -configuration Release \
-          -destination 'generic/platform=iOS' \
-          -archivePath build/BionicDroneVisionServer.xcarchive
-          
-    - name: Export IPA
-      run: |
-        cat > export.plist << 'PLIST'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>uploadSymbols</key>
-            <true/>
-        </dict>
-        </plist>
-        PLIST
+        swift build -c release --arch arm64
         
-        xcodebuild -exportArchive \
-          -archivePath build/BionicDroneVisionServer.xcarchive \
-          -exportPath build/Products \
-          -exportOptionsPlist export.plist
-          
-    - name: Upload IPA
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: BionicDroneVisionServer
-        path: build/Products/*.ipa
+        name: build-output
+        path: .build/release/
