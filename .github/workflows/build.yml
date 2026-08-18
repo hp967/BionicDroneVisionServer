@@ -19,8 +19,15 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Create Xcode Project from Package.swift
+    - name: Build with Swift Package Manager
       run: |
+        echo "Building with Swift Package Manager..."
+        swift build -c release
+        echo "Build successful!"
+    
+    - name: Create Xcode Project
+      run: |
+        echo "Creating Xcode project..."
         xcodebuild -create-xcode-project \
           -projectName BionicDroneVisionServer \
           -folderPath . \
@@ -31,9 +38,11 @@ jobs:
           -interface SwiftUI \
           -language Swift \
           -output BionicDroneVisionServer.xcodeproj
+        ls -la *.xcodeproj/
     
     - name: Build Archive
       run: |
+        echo "Building archive..."
         xcodebuild archive \
           -project BionicDroneVisionServer.xcodeproj \
           -scheme BionicDroneVisionServer \
@@ -42,11 +51,13 @@ jobs:
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGN_IDENTITY="" \
           -archivePath build/BionicDroneVisionServer.xcarchive \
-          2>&1 | tail -50
+          2>&1 | tail -30
+        ls -la build/
     
     - name: Export IPA
       run: |
-        cat > export.plist << 'EOF'
+        echo "Exporting IPA..."
+        cat > export.plist << 'PLIST'
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
@@ -57,12 +68,13 @@ jobs:
             <false/>
         </dict>
         </plist>
-        EOF
+        PLIST
         
         xcodebuild -exportArchive \
           -archivePath build/BionicDroneVisionServer.xcarchive \
           -exportPath build/Products \
           -exportOptionsPlist export.plist
+        ls -la build/Products/
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
