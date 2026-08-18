@@ -7,27 +7,17 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
-        .executable(
+        .library(
             name: "BionicDroneVisionServer",
             targets: ["BionicDroneVisionServer"]
         ),
     ],
     dependencies: [],
     targets: [
-        .executableTarget(
+        .target(
             name: "BionicDroneVisionServer",
             dependencies: [],
-            path: ".",
-            sources: [
-                "LlamaServer.swift",
-                "TelemetryReceiver.swift",
-                "APIModels.swift",
-                "NetworkHelper.swift"
-            ],
-            cSettings: [
-                .headerSearchPath("llama.cpp/include"),
-                .headerSearchPath("llama.cpp/ggml/include")
-            ]
+            path: "App"
         )
     ]
 )
