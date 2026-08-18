@@ -19,81 +19,30 @@ jobs:
       with:
         xcode-version: '15.4'
     
-    - name: Create iOS App Bundle
+    - name: Create Xcode Project
       run: |
-        # Create a minimal Swift app
-        mkdir -p App/App.swift
-        cat > App/main.swift << 'SWIFT'
-        import SwiftUI
-        
-        @main
-        struct App: App {
-            var body: some Scene {
-                WindowGroup {
-                    Text("Hello, iOS!")
-                }
-            }
-        }
-        SWIFT
-        
-        # Create Info.plist
-        cat > Info.plist << 'PLIST'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>CFBundleDevelopmentRegion</key>
-            <string>$(DEVELOPMENT_LANGUAGE)</string>
-            <key>CFBundleExecutable</key>
-            <string>$(EXECUTABLE_NAME)</string>
-            <key>CFBundleIdentifier</key>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            <key>CFBundleInfoDictionaryVersion</key>
-            <string>6.0</string>
-            <key>CFBundleName</key>
-            <string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-            <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
-            <key>CFBundleVersion</key>
-            <string>1</string>
-            <key>LSRequiresIPhoneOS</key>
-            <true/>
-            <key>UIApplicationSceneManifest</key>
-            <dict>
-                <key>UIApplicationSupportsMultipleScenes</key>
-                <false/>
-            </dict>
-            <key>UIApplicationSupportsIndirectInputEvents</key>
-            <true/>
-            <key>UILaunchScreen</key>
-            <dict/>
-            <key>UIRequiredDeviceCapabilities</key>
-            <array>
-                <string>arm64</string>
-            </array>
-        </dict>
-        </plist>
-        PLIST
-        
-        # Create Xcode project structure
-        mkdir -p App.xcodeproj
-        cp Info.plist .
-        
-        echo "Created basic iOS app structure"
+        xcodebuild -create-xcode-project \
+          -projectName BionicDroneVisionServer \
+          -folderPath . \
+          -scheme BionicDroneVisionServer \
+          -target BionicDroneVisionServer \
+          -targetDeviceFamily iphone,iPad \
+          -deploymentTarget 17.0 \
+          -interface SwiftUI \
+          -language Swift \
+          -output BionicDroneVisionServer.xcodeproj
+        ls -la *.xcodeproj/
     
     - name: Build Archive
       run: |
         xcodebuild archive \
-          -project App.xcodeproj \
-          -scheme App \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
           -configuration Release \
           -destination 'generic/platform=iOS' \
           CODE_SIGNING_REQUIRED=NO \
           CODE_SIGN_IDENTITY="" \
-          -archivePath build/App.xcarchive \
-          2>&1 | tail -30
+          -archivePath build/BionicDroneVisionServer.xcarchive
         ls -la build/
     
     - name: Export IPA
@@ -112,7 +61,7 @@ jobs:
         PLIST
         
         xcodebuild -exportArchive \
-          -archivePath build/App.xcarchive \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
           -exportPath build/Products \
           -exportOptionsPlist export.plist
         ls -la build/Products/
@@ -120,5 +69,5 @@ jobs:
     - name: Upload IPA
       uses: actions/upload-artifact@v4
       with:
-        name: App
-        path: build/Products/App.ipa
+        name: BionicDroneVisionServer
+        path: build/Products/BionicDroneVisionServer.ipa
