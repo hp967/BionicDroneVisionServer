@@ -13,13 +13,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "Swifter", path: "Sources/Swifter"),
+        .package(url: "https://github.com/httpswift/swifter.git", from: "1.5.0"),
     ],
     targets: [
         .target(
             name: "BionicDroneVisionServer",
             dependencies: [
-                .product(name: "Swifter", package: "Swifter")
+                .product(name: "Swifter", package: "swifter")
             ],
             path: ".",
             sources: [
