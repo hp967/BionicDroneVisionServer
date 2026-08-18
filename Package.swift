@@ -7,39 +7,26 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
-        .library(
+        .executable(
             name: "BionicDroneVisionServer",
             targets: ["BionicDroneVisionServer"]
         ),
     ],
     dependencies: [],
     targets: [
-        .target(
+        .executableTarget(
             name: "BionicDroneVisionServer",
+            dependencies: [],
             path: ".",
             sources: [
-                "BionicDroneVisionServerApp.swift",
-                "ContentView.swift",
-                "ModelManagerView.swift",
-                "ServerControlView.swift",
-                "TelemetryMonitorView.swift",
-                "TelemetryReceiver.swift",
-                "TelemetryModels.swift",
-                "APIModels.swift",
-                "NetworkHelper.swift",
                 "LlamaServer.swift",
-                "LlamaVisionEngine.swift"
+                "TelemetryReceiver.swift",
+                "APIModels.swift",
+                "NetworkHelper.swift"
             ],
-            resources: [
-                .process("BionicDroneVisionServer-Bridging-Header.h")
-            ],
-            publicHeadersPath: "spm-headers",
             cSettings: [
                 .headerSearchPath("llama.cpp/include"),
-                .headerSearchPath("llama.cpp/ggml/include"),
-                .headerSearchPath("llama.cpp/src"),
-                .define("GGML_METAL"),
-                .define("GGML_OPENMP"),
+                .headerSearchPath("llama.cpp/ggml/include")
             ]
         )
     ]
