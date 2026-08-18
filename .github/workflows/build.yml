@@ -18,27 +18,21 @@ jobs:
       with:
         xcode-version: '15.4'
         
-    - name: Prepare source files
+    - name: Prepare files
       run: |
-        mkdir -p Sources/BionicDroneVisionServer
-        cp *.swift Sources/BionicDroneVisionServer/
-        cp BionicDroneVisionServer/*.swift Sources/BionicDroneVisionServer/
-        cp BionicDroneVisionServer-Bridging-Header.h Sources/
-        
-    - name: Prepare llama.cpp
-      run: |
-        mkdir -p Sources/llama
-        cp include/*.h Sources/llama/
-        cp -r ggml/include/* Sources/llama/
-        cp src/*.cpp Sources/llama/
-        cp src/*.h Sources/llama/
+        mkdir -p llama.cpp/include llama.cpp/src
+        cp include/*.h llama.cpp/include/
+        cp -r ggml/include/* llama.cpp/include/
+        cp src/*.cpp llama.cpp/src/
+        cp src/*.h llama.cpp/src/
         
     - name: Build
       run: |
-        swift build -c release --arch arm64
+        cd BionicDroneVisionServer
+        swift build -c release
         
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: build-output
-        path: .build/release/
+        path: BionicDroneVisionServer/.build/release/
