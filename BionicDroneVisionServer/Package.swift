@@ -9,7 +9,7 @@ let package = Package(
     targets: [
         .target(
             name: "BionicDroneVisionServer",
-            path: ".",
+            path: "..",
             sources: [
                 "BionicDroneVisionServerApp.swift",
                 "ContentView.swift",
@@ -23,12 +23,11 @@ let package = Package(
                 "TelemetryMonitorView.swift",
                 "TelemetryReceiver.swift"
             ],
-            resources: [
-                .copy("Resources")
-            ],
-            linkerSettings: [
-                .unsafeFlags(["-framework", "Accelerate"]),
-                .unsafeFlags(["-F", "/usr/lib"]),
+            cSettings: [
+                .headerSearchPath("llama.cpp/include"),
+                .headerSearchPath("llama.cpp/ggml/include"),
+                .headerSearchPath("llama.cpp/src"),
+                .define("GGML_METAL"),
             ]
         )
     ]
