@@ -21,7 +21,15 @@ jobs:
     
     - name: Build Archive
       run: |
-        xcodebuild archive           -project BionicDroneVisionServer.xcodeproj           -scheme BionicDroneVisionServer           -configuration Release           -destination 'generic/platform=iOS'           CODE_SIGNING_REQUIRED=NO           CODE_SIGN_IDENTITY=""           -archivePath build/BionicDroneVisionServer.xcarchive           2>&1 | tail -50
+        xcodebuild archive \
+          -project BionicDroneVisionServer.xcodeproj \
+          -scheme BionicDroneVisionServer \
+          -configuration Release \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGN_IDENTITY="" \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          2>&1 | tail -100
         ls -la build/
     
     - name: Export IPA
@@ -39,7 +47,10 @@ jobs:
         </plist>
         PLIST
         
-        xcodebuild -exportArchive           -archivePath build/BionicDroneVisionServer.xcarchive           -exportPath build/Products           -exportOptionsPlist export.plist
+        xcodebuild -exportArchive \
+          -archivePath build/BionicDroneVisionServer.xcarchive \
+          -exportPath build/Products \
+          -exportOptionsPlist export.plist
         ls -la build/Products/
     
     - name: Upload IPA
