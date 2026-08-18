@@ -13,13 +13,13 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://ghproxy.net/https://github.com/httpswift/swifter.git", from: "1.5.0"),
+        .package(name: "Swifter", path: "Sources/Swifter"),
     ],
     targets: [
         .target(
             name: "BionicDroneVisionServer",
             dependencies: [
-                .product(name: "Swifter", package: "swifter")
+                .product(name: "Swifter", package: "Swifter")
             ],
             path: ".",
             sources: [
