@@ -21,32 +21,19 @@ jobs:
       run: |
         xcodebuild -version
         swift --version
-        echo "SDK paths:"
-        xcrun --show-sdk-path --sdk iphoneos
-        xcrun --show-sdk-path --sdk iphonesimulator
     
-    - name: Create Application Structure
+    - name: Create iOS App
       run: |
         mkdir -p BionicDroneVisionServer
         
         cat > BionicDroneVisionServer/main.swift << 'EOF'
         import SwiftUI
-        
         @main
         struct BionicDroneVisionServerApp: App {
             var body: some Scene {
                 WindowGroup {
-                    VStack(spacing: 20) {
-                        Image(systemName: "drone.front.closed")
-                            .font(.system(size: 80))
-                            .foregroundColor(.blue)
-                        Text("Bionic Drone Vision Server")
-                            .font(.title)
-                        Text("Ready")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .padding()
+                    Text("Bionic Drone Vision Server")
+                        .font(.title)
                 }
             }
         }
@@ -57,96 +44,53 @@ jobs:
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
-            <key>CFBundleExecutable</key>
-            <string>$(EXECUTABLE_NAME)</string>
-            <key>CFBundleIdentifier</key>
-            <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-            <key>CFBundleInfoDictionaryVersion</key>
-            <string>6.0</string>
-            <key>CFBundleName</key>
-            <string>$(PRODUCT_NAME)</string>
-            <key>CFBundlePackageType</key>
-            <string>APPL</string>
-            <key>CFBundleShortVersionString</key>
-            <string>1.0</string>
-            <key>CFBundleVersion</key>
-            <string>1</string>
-            <key>LSRequiresIPhoneOS</key>
-            <true/>
-            <key>UILaunchScreen</key>
-            <dict/>
-            <key>UIRequiredDeviceCapabilities</key>
-            <array><string>arm64</string></array>
-            <key>UISupportedInterfaceOrientations</key>
-            <array><string>UIInterfaceOrientationPortrait</string></array>
+            <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+            <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+            <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+            <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>1.0</string>
+            <key>CFBundleVersion</key><string>1</string>
+            <key>LSRequiresIPhoneOS</key><true/>
+            <key>UILaunchScreen</key><dict/>
+            <key>UIRequiredDeviceCapabilities</key><array><string>arm64</string></array>
+            <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array>
         </dict>
         </plist>
         EOF
         
         ls -la BionicDroneVisionServer/
     
-    - name: Create Xcode Project
+    - name: Generate Xcode Project
       run: |
-        mkdir -p BionicDroneVisionServer.xcodeproj
+        # Install xcodegen
+        brew install xcodegen
         
-        cat > BionicDroneVisionServer.xcodeproj/project.pbxproj << 'EOF'
-        // !$*UTF8*$!
-        {
-        	archiveVersion = 1;
-        	classes = {
-        	};
-        	objectVersion = 54;
-        	objects = {
-        
-        /* Begin PBXBuildFile section */
-        		1A000001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A000001 /* main.swift */; };
-        /* End PBXBuildFile section */
-        
-        /* Begin PBXFileReference section */
-        		2A000001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-        		3A000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-        		4A000001 /* BionicDroneVisionServer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BionicDroneVisionServer.app; sourceTree = BUILT_PRODUCTS_DIR; };
-        /* End PBXFileReference section */
-        
-        /* Begin PBXFrameworksBuildPhase section */
-        		5A000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = ( ); runOnlyForDeploymentPostprocessing = 0; };
-        /* End PBXFrameworksBuildPhase section */
-        
-        /* Begin PBXGroup section */
-        		6A000001 = {isa = PBXGroup; children = ( 7A000001 /* BionicDroneVisionServer */, 8A000001 /* Frameworks */, 9A000001 /* Products */ ); sourceTree = "<group>"; };
-        		7A000001 /* BionicDroneVisionServer */ = {isa = PBXGroup; children = ( 2A000001 /* main.swift */, 3A000001 /* Info.plist */ ); path = BionicDroneVisionServer; sourceTree = "<group>"; };
-        		8A000001 /* Frameworks */ = {isa = PBXGroup; name = Frameworks; sourceTree = "<group>"; };
-        		9A000001 /* Products */ = {isa = PBXGroup; children = ( 4A000001 /* BionicDroneVisionServer.app */ ); name = Products; sourceTree = "<group>"; };
-        /* End PBXGroup section */
-        
-        /* Begin PBXNativeTarget section */
-        		10A00001 /* BionicDroneVisionServer */ = {isa = PBXNativeTarget; buildConfigurationList = 11A00002 /* Build configuration list for PBXNativeTarget "BionicDroneVisionServer" */; buildPhases = ( 12A00001 /* Sources */, 5A000001 /* Frameworks */ ); buildRules = ( ); dependencies = ( ); name = BionicDroneVisionServer; productName = BionicDroneVisionServer; productReference = 4A000001 /* BionicDroneVisionServer.app */; productType = "com.apple.product-type.application"; };
-        /* End PBXNativeTarget section */
-        
-        /* Begin PBXProject section */
-        		13A00001 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 1540; LastUpgradeCheck = 1540; }; buildConfigurationList = 14A00002 /* Build configuration list for PBXProject "BionicDroneVisionServer" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = ( en, Base ); mainGroup = 6A000001; preferredProjectObjectIndex = 10A00001; productRefGroup = 9A000001 /* Products */; projectDirPath = ""; projectRoot = ""; targets = ( 10A00001 /* BionicDroneVisionServer */ ); };
-        /* End PBXProject section */
-        
-        /* Begin PBXSourcesBuildPhase section */
-        		12A00001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = ( 1A000001 /* main.swift in Sources */, ); runOnlyForDeploymentPostprocessing = 0; };
-        /* End PBXSourcesBuildPhase section */
-        
-        /* Begin XCBuildConfiguration section */
-        		11A00003 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAY S_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; IPHONEOS_DEPLOYMENT_TARGET = 16.0; MTL_ENABLE_DEBUG_INFO = NO; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
-        		15A00001 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = BionicDroneVisionServer/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 16.0; LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" ); PRODUCT_BUNDLE_IDENTIFIER = com.bionicdrone.visionserver; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
-        /* End XCBuildConfiguration section */
-        
-        /* Begin XCConfigurationList section */
-        		11A00002 /* Build configuration list for PBXNativeTarget "BionicDroneVisionServer" */ = {isa = XCConfigurationList; buildConfigurations = ( 11A00003 /* Release */ ); defaultConfigurationIsVisible = 0; };
-        		14A00002 /* Build configuration list for PBXProject "BionicDroneVisionServer" */ = {isa = XCConfigurationList; buildConfigurations = ( 15A00001 /* Release */ ); defaultConfigurationIsVisible = 0; };
-        /* End XCConfigurationList section */
-        
-        	};
-        	rootObject = 13A00001 /* Project object */;
-        }
+        # Create project spec
+        cat > Project.yml << 'EOF'
+        name: BionicDroneVisionServer
+        options:
+          bundleIdPrefix: com.bionicdrone
+          deploymentTarget:
+            iOS: "16.0"
+        targets:
+          BionicDroneVisionServer:
+            type: application
+            platform: iOS
+            sources:
+              - path: BionicDroneVisionServer
+            settings:
+              base:
+                CODE_SIGNING_REQUIRED: NO
+                CODE_SIGNING_ALLOWED: NO
+                PRODUCT_BUNDLE_IDENTIFIER: com.bionicdrone.visionserver
         EOF
         
-        ls -la BionicDroneVisionServer.xcodeproj/
+        # Generate project
+        xcodegen generate
+        
+        echo "Generated project:"
+        ls -la *.xcodeproj/
     
     - name: Build Archive
       run: |
@@ -161,11 +105,12 @@ jobs:
           CODE_SIGNING_ALLOWED=NO \
           2>&1 | tee build.log
         
-        if [ -d "build/BionicDroneVisionServer.xcarchive" ]; then
-            echo "SUCCESS: Archive created"
+        echo "=== Archive Result ==="
+        if [ -d "build/BionicDroneVisionServer.xcarchive/Products/Applications" ]; then
+            echo "SUCCESS"
             ls -la build/BionicDroneVisionServer.xcarchive/Products/Applications/
         else
-            echo "FAILED: No archive found"
+            echo "FAILED"
             tail -100 build.log
             exit 1
         fi
@@ -177,10 +122,8 @@ jobs:
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>uploadSymbols</key>
-            <false/>
+            <key>method</key><string>development</string>
+            <key>uploadSymbols</key><false/>
         </dict>
         </plist>
         EOF
@@ -191,7 +134,7 @@ jobs:
           -exportOptionsPlist export.plist \
           2>&1 | tee export.log
         
-        ls -la build/*.ipa 2>/dev/null || echo "IPA not found"
+        ls -la build/*.ipa 2>/dev/null || echo "IPA not created"
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
