@@ -118,13 +118,14 @@ jobs:
           CODE_SIGN_IDENTITY="" \
           -archivePath build/App.xcarchive \
           2>&1 | tee build.log
-        echo "=== Build Output ==="
-        tail -30 build.log
         echo "=== Archive Contents ==="
-        ls -laR build/App.xcarchive/ 2>/dev/null | head -50
+        find build/App.xcarchive -type f 2>/dev/null | head -30
     
     - name: Package IPA
       run: |
+        echo "Checking archive..."
+        find build/App.xcarchive -type f 2>/dev/null
+        
         # Create Payload directory
         mkdir -p Payload
         cp -r build/App.xcarchive/Products/Applications/App.app Payload/
@@ -135,9 +136,3 @@ jobs:
         # Verify
         ls -la App.ipa
         unzip -l App.ipa
-    
-    - name: Upload IPA
-      uses: actions/upload-artifact@v4
-      with:
-        name: App
-        path: App.ipa
