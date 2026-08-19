@@ -82,29 +82,11 @@ jobs:
         xcodegen generate
         ls -la *.xcodeproj/
     
-    - name: Build
+    - name: Build and Archive
       run: |
         mkdir -p build
         
-        # First try a simple build to check for errors
-        echo "=== Attempting build ==="
-        xcodebuild build \
-          -project TestApp.xcodeproj \
-          -scheme TestApp \
-          -configuration Debug \
-          -destination 'generic/platform=iOS' \
-          -derivedDataPath build \
-          CODE_SIGNING_ALLOWED=NO \
-          2>&1 | tee build.log
-        
-        echo "=== Build Output ==="
-        tail -50 build.log
-    
-    - name: Build Archive
-      if: success()
-      run: |
-        mkdir -p build
-        
+        echo "=== Starting xcodebuild archive ==="
         xcodebuild archive \
           -project TestApp.xcodeproj \
           -scheme TestApp \
@@ -112,15 +94,17 @@ jobs:
           -destination 'generic/platform=iOS' \
           -archivePath build/TestApp.xcarchive \
           CODE_SIGNING_ALLOWED=NO \
-          2>&1 | tee archive.log
+          2>&1 | tee build.log
         
-        echo "=== Archive Result ==="
+        echo "=== Checking result ==="
         if [ -d "build/TestApp.xcarchive" ]; then
-            echo "SUCCESS"
-            ls -la build/TestApp.xcarchive/Products/Applications/
+            echo "SUCCESS: Archive created"
+            ls -la build/TestApp.xcarchive/
+            ls -la build/TestApp.xcarchive/Products/Applications/ 2>/dev/null || echo "No Applications dir"
         else
-            echo "FAILED"
-            tail -100 archive.log
+            echo "FAILED: Archive not found"
+            echo "=== Last 100 lines of build.log ==="
+            tail -100 build.log
             exit 1
         fi
     
@@ -144,7 +128,17 @@ jobs:
           -exportOptionsPlist export.plist \
           2>&1 | tee export.log
         
-        ls -la build/*.ipa 2>/dev/null || echo "IPA not found"
+        ls -la build/*.ipa 2>/dev/null || echo "IPA not created"
+    
+    - name: Upload Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          build.log
+          export.log
+        if-no-files-found: warn
     
     - name: Upload IPA
       if: success()
