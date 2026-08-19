@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build iOS App
-    runs-on: macos-14
+    runs-on: macos-13
     
     steps:
     - name: Checkout
@@ -15,7 +15,7 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.4'
+        xcode-version: '15.0.1'
     
     - name: Install xcodegen
       run: brew install xcodegen
@@ -65,7 +65,8 @@ jobs:
         options:
           bundleIdPrefix: com.test
           deploymentTarget:
-            iOS: "16.0"
+            iOS: "15.0"
+          xcodeVersion: "15.0"
         targets:
           TestApp:
             type: application
@@ -77,30 +78,13 @@ jobs:
                 CODE_SIGNING_REQUIRED: NO
                 CODE_SIGNING_ALLOWED: NO
                 PRODUCT_BUNDLE_IDENTIFIER: com.test.app
-                IPHONEOS_DEPLOYMENT_TARGET: 16.0
+                IPHONEOS_DEPLOYMENT_TARGET: 15.0
         EOF
         
         xcodegen generate
         ls -la *.xcodeproj/
-        cat TestApp.xcodeproj/project.pbxproj | head -50
     
-    - name: Build
-      run: |
-        mkdir -p build
-        
-        xcodebuild build \
-          -project TestApp.xcodeproj \
-          -scheme TestApp \
-          -configuration Debug \
-          -destination 'generic/platform=iOS' \
-          -derivedDataPath build \
-          CODE_SIGNING_ALLOWED=NO \
-          2>&1 | tee build.log
-        
-        echo "=== Build Result ==="
-        find build -name "*.app" -type d 2>/dev/null | head -5
-    
-    - name: Archive
+    - name: Build and Archive
       run: |
         mkdir -p build
         
@@ -111,15 +95,16 @@ jobs:
           -destination 'generic/platform=iOS' \
           -archivePath build/TestApp.xcarchive \
           CODE_SIGNING_ALLOWED=NO \
-          2>&1 | tee archive.log
+          2>&1 | tee build.log
         
-        echo "=== Archive Result ==="
-        if [ -d "build/TestApp.xcarchive/Products/Applications" ]; then
+        echo "=== Result ==="
+        if [ -d "build/TestApp.xcarchive" ]; then
             echo "SUCCESS"
             ls -la build/TestApp.xcarchive/Products/Applications/
         else
             echo "FAILED"
-            tail -50 archive.log
+            tail -50 build.log
+            exit 1
         fi
     
     - name: Export IPA
@@ -142,15 +127,20 @@ jobs:
           -exportOptionsPlist export.plist \
           2>&1 | tee export.log
         
-        ls -la build/*.ipa 2>/dev/null || echo "No IPA created"
+        ls -la build/*.ipa 2>/dev/null || echo "No IPA"
     
-    - name: Upload Artifacts
+    - name: Upload Logs
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: build-output
-        path: |
-          build/*.ipa
-          build.log
-          archive.log
-          export.log
+        name: build-logs
+        path: build.log
         if-no-files-found: warn
+    
+    - name: Upload IPA
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TestApp
+        path: build/*.ipa
+        if-no-files-found: error
