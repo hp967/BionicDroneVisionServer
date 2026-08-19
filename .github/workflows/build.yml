@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     name: Build iOS App
-    runs-on: macos-13
+    runs-on: macos-latest
     
     steps:
     - name: Checkout
@@ -15,7 +15,7 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.0.1'
+        xcode-version: '15.4'
     
     - name: Install xcodegen
       run: brew install xcodegen
@@ -58,15 +58,14 @@ jobs:
         
         ls -la Sources/
     
-    - name: Generate Xcode Project
+    - name: Generate Xcode Project with xcodegen
       run: |
         cat > Project.yml << 'EOF'
         name: TestApp
         options:
           bundleIdPrefix: com.test
           deploymentTarget:
-            iOS: "15.0"
-          xcodeVersion: "15.0"
+            iOS: "16.0"
         targets:
           TestApp:
             type: application
@@ -78,15 +77,12 @@ jobs:
                 CODE_SIGNING_REQUIRED: NO
                 CODE_SIGNING_ALLOWED: NO
                 PRODUCT_BUNDLE_IDENTIFIER: com.test.app
-                IPHONEOS_DEPLOYMENT_TARGET: 15.0
         EOF
         
         xcodegen generate
         ls -la *.xcodeproj/
-        echo "Project file version:"
-        head -5 TestApp.xcodeproj/project.pbxproj
     
-    - name: Build and Archive
+    - name: Build Archive
       run: |
         mkdir -p build
         
@@ -100,7 +96,7 @@ jobs:
           2>&1 | tee build.log
         
         echo "=== Result ==="
-        if [ -d "build/TestApp.xcarchive" ]; then
+        if [ -d "build/TestApp.xcarchive/Products/Applications" ]; then
             echo "SUCCESS"
             ls -la build/TestApp.xcarchive/Products/Applications/
         else
@@ -129,7 +125,7 @@ jobs:
           -exportOptionsPlist export.plist \
           2>&1 | tee export.log
         
-        ls -la build/*.ipa 2>/dev/null || echo "No IPA"
+        ls -la build/*.ipa 2>/dev/null || echo "No IPA created"
     
     - name: Upload IPA
       uses: actions/upload-artifact@v4
